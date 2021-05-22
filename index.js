@@ -1,16 +1,14 @@
 const Binance = require('node-binance-api');
 const binance = new Binance();
 
-const triggerPercent = 0.01;             //How much should the bestask price change for it to trigger.
+const triggerPercent = 0.02;             //How much should the bestask price change for it to trigger.
 const triggerSymbol = 'BTCUSDT';        //What are we watching for a trigger.
 const triggerTime = 1000;               //How many milliseconds should we log for after a trigger.
 
 const symbols = ['ICPUSDT','BTCUSDT'];  //What should we watch after the trigger.
 
 
-
 // Mess below.
-
 
 
 let previousSymbolData = {}; //Data of previous update.
@@ -22,6 +20,9 @@ symbols.forEach(symbol => {
 
 let previousTriggerData = null;
 let triggeredTimestamp = null;
+
+console.log("Started at "+Date.now())
+
 binance.futuresBookTickerStream(function(data){
     if(triggeredTimestamp !== null && ((Date.now()-triggeredTimestamp) > triggerTime)){
         triggeredTimestamp = null;
@@ -32,7 +33,7 @@ binance.futuresBookTickerStream(function(data){
     if(triggerSymbol === data.symbol){
         if(triggeredTimestamp === null){
             if(previousTriggerData !== null){
-                let change = 100-((data.bestAsk/previousTriggerData.bestAsk)*100);
+                let change = (((data.bestAsk/previousTriggerData.bestAsk)*100)-100).toFixed(3);
                 if(change > triggerPercent){
                     triggeredTimestamp = Date.now();
                     triggerSymbolData = Object.assign({}, previousSymbolData); //Stupid references.
@@ -52,10 +53,10 @@ binance.futuresBookTickerStream(function(data){
             //Time since trigger.
             let time = Date.now()-triggeredTimestamp;
             //Change since last update.
-            let change = 100-((data.bestAsk/previousSymbolData[data.symbol].bestAsk)*100);
+            let change = parseFloat((((data.bestAsk/previousSymbolData[data.symbol].bestAsk)*100)-100).toFixed(3));
             //Change since trigger.
-            let overall_change = 100-((data.bestAsk/triggerSymbolData[data.symbol].bestAsk)*100);
-            console.log("["+time+"] "+data.symbol+" "+change+"% | "+overall_change+"% ("+data.bestAsk+")");
+            let overall_change = (((data.bestAsk/triggerSymbolData[data.symbol].bestAsk)*100)-100).toFixed(3);
+            if(change !== 0) console.log("["+time+"] "+data.symbol+" "+change+"% | "+overall_change+"% ("+data.bestAsk+")");
             previousSymbolData[data.symbol] = data;
         }
 
