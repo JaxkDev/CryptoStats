@@ -33,7 +33,7 @@ binance.futuresBookTickerStream(function(data){
         if(triggeredTimestamp === null){
             if(previousTriggerData !== null){
                 let change = 100-((data.bestAsk/previousTriggerData.bestAsk)*100);
-                if(change > triggerPercent || change < -triggerPercent){
+                if(change > triggerPercent){
                     triggeredTimestamp = Date.now();
                     triggerSymbolData = Object.assign({}, previousSymbolData); //Stupid references.
                     console.log("Triggered, a "+change+"% in "+triggerSymbol+" at "+(new Date().getTime()))
